@@ -7,12 +7,10 @@ except:
 import maya.OpenMayaUI as omui
 import random
 
-# -- Get Maya Main Window --
 def get_maya_main_window():
     main_window_ptr = omui.MQtUtil.mainWindow()
     return wrapInstance(int(main_window_ptr), QtWidgets.QMainWindow)
 
-# -- Main Game Class --
 class FlappyBirdGameUI(QtWidgets.QDialog):
     def __init__(self):
         super(FlappyBirdGameUI, self).__init__(parent=get_maya_main_window())
@@ -20,7 +18,6 @@ class FlappyBirdGameUI(QtWidgets.QDialog):
         self.setFixedSize(300, 180)
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
-        # Game variables
         self.bird = None
         self.pipes = []
         self.gravity = -0.3
@@ -61,11 +58,9 @@ class FlappyBirdGameUI(QtWidgets.QDialog):
         self.status_label.setText("Game Running...")
         self.jump_btn.setEnabled(True)
 
-        # Create bird
         self.bird = cmds.polySphere(name="bird")[0]
         cmds.move(0, 5, 0, self.bird)
 
-        # Start timer loop
         self.timer.start(50)
 
     def jump(self):
@@ -76,23 +71,19 @@ class FlappyBirdGameUI(QtWidgets.QDialog):
         if not self.is_game_running:
             return
 
-        # Bird physics
         self.vertical_speed += self.gravity
         pos = cmds.xform(self.bird, q=True, translation=True)
         new_y = pos[1] + self.vertical_speed
         cmds.move(pos[0], new_y, pos[2], self.bird)
 
-        # Game over if bird hits ground or flies too high
         if new_y <= 0 or new_y >= 15:
             self.game_over()
             return
 
-        # Move pipes
         for pipe_pair in self.pipes:
             for pipe in pipe_pair:
                 cmds.move(-0.5, 0, 0, pipe, relative=True)
 
-        # Remove offscreen pipes
         for pipe_pair in self.pipes[:]:
             x = cmds.xform(pipe_pair[0], q=True, translation=True)[0]
             if x < -10:
@@ -102,40 +93,34 @@ class FlappyBirdGameUI(QtWidgets.QDialog):
                 self.score += 1
                 self.score_label.setText(f"Score: {self.score}")
 
-        # Add new pipes
         self.pipe_timer += 1
         if self.pipe_timer >= 20:
             self.pipe_timer = 0
             self.spawn_pipe()
 
-        # Collision detection
         bird_pos = cmds.xform(self.bird, q=True, translation=True)
         for pipe_pair in self.pipes:
             for pipe in pipe_pair:
                 pipe_pos = cmds.xform(pipe, q=True, translation=True)
                 pipe_scale = cmds.xform(pipe, q=True, scale=True)
-                pipe_height = pipe_scale[1] * 1  # assuming cube scaled in Y for height
-                pipe_width = pipe_scale[0] * 1   # assuming cube scaled in X for width
+                pipe_height = pipe_scale[1] * 1
+                pipe_width = pipe_scale[0] * 1
 
-                # Simple AABB collision check
                 if (abs(pipe_pos[0] - bird_pos[0]) < (pipe_width / 2 + 0.5) and
                     abs(pipe_pos[1] - bird_pos[1]) < (pipe_height / 2 + 0.5)):
                     self.game_over()
                     return
 
     def spawn_pipe(self):
-        gap = 4.0  # ช่องว่างที่นกต้องลอด
-        center = random.uniform(5, 10)  # ความสูงกลางช่องว่างจากพื้น
+        gap = 4.0
+        center = random.uniform(5, 10)
 
-        # ความสูงของท่อบนและท่อล่าง
         top_height = 15 - (center + gap / 2)
         bottom_height = center - gap / 2
 
-        # สร้างท่อบน (ตั้งหัวลง)
         top = cmds.polyCube(name="pipe_top", height=top_height, width=2, depth=2)[0]
         cmds.move(10, 15 - top_height / 2, 0, top)
 
-        # สร้างท่อล่าง
         bottom = cmds.polyCube(name="pipe_bottom", height=bottom_height, width=2, depth=2)[0]
         cmds.move(10, bottom_height / 2, 0, bottom)
 
@@ -156,7 +141,6 @@ class FlappyBirdGameUI(QtWidgets.QDialog):
                     cmds.delete(pipe)
         self.pipes = []
 
-# -- Show UI Function --
 def show_flappy_bird_game():
     for widget in QtWidgets.QApplication.allWidgets():
         if isinstance(widget, FlappyBirdGameUI):
@@ -164,5 +148,4 @@ def show_flappy_bird_game():
     win = FlappyBirdGameUI()
     win.show()
 
-# -- Run the Game --
 show_flappy_bird_game()
