@@ -1,5 +1,5 @@
 import importlib
 import Fluffybird.FluffybirdUi as Fbui
-importlib.reload(stui)
+importlib.reload(Fbui)
 
 Fbui.run()

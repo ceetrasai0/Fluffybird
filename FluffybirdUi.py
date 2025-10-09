@@ -4,11 +4,12 @@ try:
 except:
 	from PySide2 import QtCore, QtGui, QtWidgets
 	from shiboken2 import wrapInstance
-import maya.OpenMayaUI as omui
+import maya.OpenMayaUI as Fbui
+import maya.cmds as cmds
 import random
 
 def get_maya_main_window():
-    main_window_ptr = omui.MQtUtil.mainWindow()
+    main_window_ptr = Fbui.MQtUtil.mainWindow()
     return wrapInstance(int(main_window_ptr), QtWidgets.QMainWindow)
 
 class FlappyBirdGameUI(QtWidgets.QDialog):
@@ -103,8 +104,8 @@ class FlappyBirdGameUI(QtWidgets.QDialog):
             for pipe in pipe_pair:
                 pipe_pos = cmds.xform(pipe, q=True, translation=True)
                 pipe_scale = cmds.xform(pipe, q=True, scale=True)
-                pipe_height = pipe_scale[1] * 1
-                pipe_width = pipe_scale[0] * 1
+                pipe_height = pipe_scale[1] * 1 
+                pipe_width = pipe_scale[0] * 1 
 
                 if (abs(pipe_pos[0] - bird_pos[0]) < (pipe_width / 2 + 0.5) and
                     abs(pipe_pos[1] - bird_pos[1]) < (pipe_height / 2 + 0.5)):
@@ -112,7 +113,7 @@ class FlappyBirdGameUI(QtWidgets.QDialog):
                     return
 
     def spawn_pipe(self):
-        gap = 4.0
+        gap = 4.0 
         center = random.uniform(5, 10)
 
         top_height = 15 - (center + gap / 2)
