@@ -15,7 +15,7 @@ def get_maya_main_window():
 class FlappyBirdGameUI(QtWidgets.QDialog):
     def __init__(self):
         super(FlappyBirdGameUI, self).__init__(parent=get_maya_main_window())
-        self.setWindowTitle("Flappy Bird in Maya")
+        self.setWindowTitle("Flappy Bird")
         self.setFixedSize(300, 180)
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
