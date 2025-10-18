@@ -59,6 +59,13 @@ class FlappyBirdGameUI(QtWidgets.QDialog):
         self.status_label.setText("Game Running...")
         self.jump_btn.setEnabled(True)
 
+        cmds.lookThru('front')
+        cmds.viewFit(all=True)
+        
+        front_camera = cmds.modelEditor(cmds.playblast(activeEditor=True), q=True, camera=True)
+        cam_pos = cmds.getAttr(f"{front_camera}.translate")[0]
+        cmds.setAttr(f"{front_camera}.translate", cam_pos[0], cam_pos[1] + 5, cam_pos[2])
+
         self.bird = cmds.polySphere(name="bird")[0]
         cmds.move(0, 5, 0, self.bird)
 
