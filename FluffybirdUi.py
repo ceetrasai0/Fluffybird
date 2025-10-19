@@ -18,6 +18,28 @@ class FlappyBirdGameUI(QtWidgets.QDialog):
         self.setWindowTitle("Flappy Bird")
         self.setFixedSize(300, 180)
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
+        self.setStyleSheet("""
+            QDialog {
+                background-color: white;
+                color: black;
+                font-family: Arial;
+                font-size: 12px;
+            }
+            QPushButton {
+                background-color: white;
+                color: black;
+                border: 1px solid #aaa;
+                padding: 5px;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: black;
+                color: white;
+            }
+            QLabel {
+                color: #333;
+            }
+        """)
 
         self.bird = None
         self.pipes = []
