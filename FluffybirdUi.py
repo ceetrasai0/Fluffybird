@@ -43,36 +43,40 @@ def import_bird_asset():
     cmds.rename(bird_obj, "bird")
     return "bird"
 
-class FlappyBirdGameUI(QtWidgets.QDialog):
+class FluffyBirdGameUI(QtWidgets.QDialog):
     def __init__(self):
-        super(FlappyBirdGameUI, self).__init__(parent=get_maya_main_window())
+        super(FluffyBirdGameUI, self).__init__(parent=get_maya_main_window())
         self.setWindowTitle("Fluffy Bird")
-        self.setFixedSize(300, 280)
+        self.setFixedSize(300, 330)
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
         self.setWindowIcon(QtGui.QIcon(ICON_PATH))
 
-        self.setStyleSheet("""
-        QDialog {
-            background-color: white;
-            color: black;
-            font-family: Arial;
-            font-size: 12px;
-        }
-        QPushButton {
-            background-color: white;
-            color: black;
-            border: 1px solid #aaa;
-            padding: 5px;
-            border-radius: 4px;
-        }
-        QPushButton:hover {
-            background-color: black;
-            color: white;
-        }
-        QLabel {
-            color: #333;
-        }
-        """)
+        self.setStyleSheet(
+            '''
+                }
+                QDialog {
+                    background-color: white;
+                    color: black;
+                    font-family: Arial;
+                    font-size: 12px;
+                }
+                QPushButton {
+                    background-color: white;
+                    color: black;
+                    font-family: Arial;
+                    border: 3px solid #aaa;
+                    padding: 5px;
+                    border-radius: 10px;
+                }
+                QPushButton:hover {
+                    background-color: black;
+                    color: white;
+                }
+                QLabel {
+                    color: #333;
+                }
+        '''
+        )
 
         self.bird = None
         self.pipes = []
@@ -91,6 +95,8 @@ class FlappyBirdGameUI(QtWidgets.QDialog):
         self.start_btn = QtWidgets.QPushButton("Start Game")
         self.jump_btn = QtWidgets.QPushButton("Jump")
         self.jump_btn.setEnabled(False)
+        self.quit_btn = QtWidgets.QPushButton("Quit Game")  # ✅ ปุ่มใหม่
+
         self.status_label = QtWidgets.QLabel("Press Start to begin")
         self.score_label = QtWidgets.QLabel("Score: 0")
 
@@ -104,6 +110,9 @@ class FlappyBirdGameUI(QtWidgets.QDialog):
         self.image_label = QtWidgets.QLabel()
         self.image_label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(self.image_label)
+
+        layout.addStretch()
+        layout.addWidget(self.quit_btn)
 
         # ✅ เริ่มต้นด้วยภาพ ui1
         self.update_image(IMAGE_PATH_PLAYING)
@@ -119,6 +128,7 @@ class FlappyBirdGameUI(QtWidgets.QDialog):
     def create_connections(self):
         self.start_btn.clicked.connect(self.start_game)
         self.jump_btn.clicked.connect(self.jump)
+        self.quit_btn.clicked.connect(self.quit_game)
         self.timer.timeout.connect(self.update_game)
 
     def start_game(self):
@@ -149,6 +159,25 @@ class FlappyBirdGameUI(QtWidgets.QDialog):
 
         # ✅ เปลี่ยนเป็นภาพ UI ขณะเล่น
         self.update_image(IMAGE_PATH_PLAYING)
+
+    def quit_game(self):
+        """ปิดเกมและล้างทุกอย่างออกจาก scene"""
+        # หยุด timer ก่อน
+        self.timer.stop()
+        self.is_game_running = False
+
+        # ลบ bird และ pipe ทั้งหมดออกจาก Maya scene
+        if cmds.objExists("bird"):
+            cmds.delete("bird")
+
+        for pipe_pair in self.pipes:
+            for pipe in pipe_pair:
+                if cmds.objExists(pipe):
+                    cmds.delete(pipe)
+        self.pipes = []
+
+        # ปิด UI ตัวนี้
+        self.close()
 
     def jump(self):
         if self.is_game_running:
@@ -231,12 +260,18 @@ class FlappyBirdGameUI(QtWidgets.QDialog):
                     cmds.delete(pipe)
         self.pipes = []
 
-def show_flappy_bird_game():
-    for widget in QtWidgets.QApplication.allWidgets():
-        if isinstance(widget, FlappyBirdGameUI):
-            widget.close()
-    win = FlappyBirdGameUI()
-    win.show()
+def show_fluffy_bird_game():
+    global fluffy_window
+
+    try:
+        fluffy_window.close()
+        fluffy_window.deleteLater()
+    except:
+        pass
+
+    fluffy_window = FluffyBirdGameUI()
+    fluffy_window.show()
+
 
 # ✅ เรียกแสดงเกม
-show_flappy_bird_game()
+show_fluffy_bird_game()
