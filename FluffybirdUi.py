@@ -11,6 +11,17 @@ import random
 import os
 
 ICON_PATH = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/ICON/icon.png"
+
+START1_BUTTON_IMAGE = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/BUTTON/Start1.JPG"
+START2_BUTTON_IMAGE = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/BUTTON/Start2.JPG"
+
+JUMP1_BUTTON_IMAGE = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/BUTTON/Jump1.JPG"
+JUMP2_BUTTON_IMAGE = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/BUTTON/Jump2.JPG"
+JUMP3_BUTTON_IMAGE = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/BUTTON/Jump3.JPG"
+
+QUIT1_BUTTON_IMAGE = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/BUTTON/Quit1.JPG"
+QUIT2_BUTTON_IMAGE = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/BUTTON/Quit2.JPG"
+
 # ✅ รูป UI ตอนเล่น และตอน Game Over
 IMAGE_PATH_PLAYING = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/image/ui1.jpg"
 IMAGE_PATH_GAMEOVER = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/image/ui2.jpg"
@@ -47,7 +58,7 @@ class FluffyBirdGameUI(QtWidgets.QDialog):
     def __init__(self):
         super(FluffyBirdGameUI, self).__init__(parent=get_maya_main_window())
         self.setWindowTitle("Fluffy Bird")
-        self.setFixedSize(300, 330)
+        self.setFixedSize(300, 430)
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
         self.setWindowIcon(QtGui.QIcon(ICON_PATH))
 
@@ -92,10 +103,63 @@ class FluffyBirdGameUI(QtWidgets.QDialog):
         self.create_connections()
 
     def create_ui(self):
-        self.start_btn = QtWidgets.QPushButton("Start Game")
-        self.jump_btn = QtWidgets.QPushButton("Jump")
+        self.start_btn = QtWidgets.QPushButton()
+        self.start_btn.setIconSize(QtCore.QSize(500, 100))
+        self.start_btn.setStyleSheet(f"""
+            QPushButton {{
+            border: none;
+            border-radius: 15px;
+            image: url({START1_BUTTON_IMAGE});
+            }}
+            QPushButton:hover {{
+            border-radius: 15px;
+            image: url({START2_BUTTON_IMAGE});
+            }}
+            QPushButton:pressed {{
+            border-radius: 15px;
+            image: url({START2_BUTTON_IMAGE});
+            }}
+        """)
+        self.start_btn.setFixedSize(280, 40)
+
+        self.jump_btn = QtWidgets.QPushButton()
+        self.jump_btn.setIconSize(QtCore.QSize(300, 100))
+        self.jump_btn.setStyleSheet(f"""
+            QPushButton {{
+            border: none;
+            border-radius: 15px;
+            image: url({JUMP1_BUTTON_IMAGE});
+            }}
+            QPushButton:hover {{
+            border-radius: 15px;
+            image: url({JUMP3_BUTTON_IMAGE});
+            }}
+            QPushButton:pressed {{
+            border-radius: 15px;
+            image: url({JUMP2_BUTTON_IMAGE});
+            }}
+        """)
+        self.jump_btn.setFixedSize(280, 100)
         self.jump_btn.setEnabled(False)
-        self.quit_btn = QtWidgets.QPushButton("Quit Game")  # ✅ ปุ่มใหม่
+
+        self.quit_btn = QtWidgets.QPushButton()  # ✅ ปุ่มใหม่
+        self.quit_btn.setIconSize(QtCore.QSize(500, 100))
+        self.quit_btn.setStyleSheet(f"""
+            QPushButton {{
+            border: none;
+            border-radius: 15px;
+            image: url({QUIT1_BUTTON_IMAGE});
+            }}
+            QPushButton:hover {{
+            border-radius: 15px;
+            image: url({QUIT2_BUTTON_IMAGE});
+            }}
+            QPushButton:pressed {{
+            border-radius: 15px;
+            image: url({QUIT2_BUTTON_IMAGE});
+            }}
+        """)
+        self.quit_btn.setFixedSize(280, 40)
 
         self.status_label = QtWidgets.QLabel("Press Start to begin")
         self.score_label = QtWidgets.QLabel("Score: 0")
