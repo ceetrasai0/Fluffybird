@@ -22,12 +22,11 @@ JUMP3_BUTTON_IMAGE = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/BUTTON
 QUIT1_BUTTON_IMAGE = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/BUTTON/Quit1.JPG"
 QUIT2_BUTTON_IMAGE = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/BUTTON/Quit2.JPG"
 
-# ✅ รูป UI ตอนเล่น และตอน Game Over
 IMAGE_PATH_PLAYING = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/image/ui1.jpg"
 IMAGE_PATH_GAMEOVER = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/image/ui2.jpg"
 
-# ✅ Path asset นก
 BIRD_ASSET_PATH = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/ASSET/thedog.ma"
+BACKGROUND_ASSET_PATH = "C:/Users/Cee/Documents/maya/2025/scripts/Fluffybird/ASSET/background.ma"
 
 def get_maya_main_window():
     main_window_ptr = Fbui.MQtUtil.mainWindow()
@@ -53,6 +52,27 @@ def import_bird_asset():
         cmds.delete("bird")
     cmds.rename(bird_obj, "bird")
     return "bird"
+
+def import_background_asset():
+    if not os.path.exists(BACKGROUND_ASSET_PATH):
+        cmds.warning(f"Background asset not found: {BACKGROUND_ASSET_PATH}")
+        return None
+
+    before = set(cmds.ls(assemblies=True))
+    cmds.file(BACKGROUND_ASSET_PATH, i=True, type="mayaAscii", ignoreVersion=True, ra=True,
+                mergeNamespacesOnClash=False, namespace="bgAsset")
+    after = set(cmds.ls(assemblies=True))
+
+    new_objects = list(after - before)
+    if not new_objects:
+        cmds.warning("No new object imported from background asset.")
+        return None
+
+    background_obj = new_objects[0]
+    if cmds.objExists("background"):
+        cmds.delete("background")
+    cmds.rename(background_obj, "background")
+    return "background"
 
 class FluffyBirdGameUI(QtWidgets.QDialog):
     def __init__(self):
@@ -142,7 +162,7 @@ class FluffyBirdGameUI(QtWidgets.QDialog):
         self.jump_btn.setFixedSize(280, 100)
         self.jump_btn.setEnabled(False)
 
-        self.quit_btn = QtWidgets.QPushButton()  # ✅ ปุ่มใหม่
+        self.quit_btn = QtWidgets.QPushButton()
         self.quit_btn.setIconSize(QtCore.QSize(500, 100))
         self.quit_btn.setStyleSheet(f"""
             QPushButton {{
@@ -159,6 +179,7 @@ class FluffyBirdGameUI(QtWidgets.QDialog):
             image: url({QUIT2_BUTTON_IMAGE});
             }}
         """)
+
         self.quit_btn.setFixedSize(280, 40)
 
         self.status_label = QtWidgets.QLabel("Press Start to begin")
@@ -170,7 +191,6 @@ class FluffyBirdGameUI(QtWidgets.QDialog):
         layout.addWidget(self.status_label)
         layout.addWidget(self.score_label)
 
-        # ✅ QLabel สำหรับแสดงภาพ UI
         self.image_label = QtWidgets.QLabel()
         self.image_label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(self.image_label)
@@ -178,7 +198,6 @@ class FluffyBirdGameUI(QtWidgets.QDialog):
         layout.addStretch()
         layout.addWidget(self.quit_btn)
 
-        # ✅ เริ่มต้นด้วยภาพ ui1
         self.update_image(IMAGE_PATH_PLAYING)
 
     def update_image(self, image_path):
@@ -208,6 +227,8 @@ class FluffyBirdGameUI(QtWidgets.QDialog):
         cmds.lookThru('front')
         cmds.viewFit(all=True)
 
+        self.background = import_background_asset()
+
         front_camera = cmds.modelEditor(cmds.playblast(activeEditor=True), q=True, camera=True)
         cam_pos = cmds.getAttr(f"{front_camera}.translate")[0]
         cmds.setAttr(f"{front_camera}.translate", cam_pos[0], cam_pos[1] + 7.5, cam_pos[2])
@@ -221,18 +242,18 @@ class FluffyBirdGameUI(QtWidgets.QDialog):
         cmds.move(0, 5, 0, self.bird)
         self.timer.start(50)
 
-        # ✅ เปลี่ยนเป็นภาพ UI ขณะเล่น
         self.update_image(IMAGE_PATH_PLAYING)
 
     def quit_game(self):
-        """ปิดเกมและล้างทุกอย่างออกจาก scene"""
-        # หยุด timer ก่อน
         self.timer.stop()
         self.is_game_running = False
 
-        # ลบ bird และ pipe ทั้งหมดออกจาก Maya scene
         if cmds.objExists("bird"):
             cmds.delete("bird")
+
+        if cmds.objExists("background"):
+            cmds.delete("background")
+
 
         for pipe_pair in self.pipes:
             for pipe in pipe_pair:
@@ -240,7 +261,6 @@ class FluffyBirdGameUI(QtWidgets.QDialog):
                     cmds.delete(pipe)
         self.pipes = []
 
-        # ปิด UI ตัวนี้
         self.close()
 
     def jump(self):
@@ -304,6 +324,17 @@ class FluffyBirdGameUI(QtWidgets.QDialog):
         bottom = cmds.polyCube(name="pipe_bottom", height=bottom_height, width=2, depth=2)[0]
         cmds.move(10, bottom_height / 2, 0, bottom)
 
+        if not cmds.objExists("pipe_white_mat"):
+            shader = cmds.shadingNode("lambert", asShader=True, name="pipe_white_mat")
+            cmds.setAttr(f"{shader}.color", 1, 1, 1, type="double3")  # RGB = white
+            sg = cmds.sets(renderable=True, noSurfaceShader=True, empty=True, name="pipe_white_matSG")
+            cmds.connectAttr(f"{shader}.outColor", f"{sg}.surfaceShader", force=True)
+        else:
+            sg = "pipe_white_matSG"
+
+        cmds.sets(top, e=True, forceElement=sg)
+        cmds.sets(bottom, e=True, forceElement=sg)
+
         self.pipes.append((top, bottom))
 
     def game_over(self):
@@ -312,12 +343,14 @@ class FluffyBirdGameUI(QtWidgets.QDialog):
         self.status_label.setText("💀 Game Over!")
         self.jump_btn.setEnabled(False)
 
-        # ✅ เปลี่ยนเป็นภาพ UI Game Over
         self.update_image(IMAGE_PATH_GAMEOVER)
 
     def reset_scene(self):
         if cmds.objExists("bird"):
             cmds.delete("bird")
+        if cmds.objExists("background"):
+            cmds.delete("background")
+
         for pipe_pair in self.pipes:
             for pipe in pipe_pair:
                 if cmds.objExists(pipe):
@@ -337,5 +370,4 @@ def show_fluffy_bird_game():
     fluffy_window.show()
 
 
-# ✅ เรียกแสดงเกม
 show_fluffy_bird_game()
